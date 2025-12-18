@@ -2,89 +2,142 @@
 #include "stm32f10x.h"
 #include "delay.h"
 
-#define RCCAPB2PERIPH (RCC_APB2Periph_USART1 | RCC_APB2Periph_GPIOA | RCC_APB2Periph_GPIOC | RCC_APB2Periph_AFIO)
+#define RCCAPB2PERIPH (RCC_APB2Periph_GPIOC | RCC_APB2Periph_GPIOB | RCC_APB2Periph_AFIO)
+#define RCCAPB1PERIPH RCC_APB1Periph_I2C1
 
-void userSerialTransmit(USART_TypeDef *usartTypedef_t, uint8_t *pData, uint16_t size);
-void userSerialReceive(USART_TypeDef *usartTypedef_t, uint8_t *pData);
-int fputc(int ch, FILE *file);
+void togglePin(void);
+int userI2CSendBytes(I2C_TypeDef *I2c_Typedef_t, uint8_t *addr, uint8_t *pData, uint16_t size);
+
+uint8_t addr = 0x78;
+uint8_t init_commands[] = {0x00, 0x8d, 0x14, 0xaf, 0xa5};
 
 int main(void)
 {
-    RCC_APB2PeriphClockCmd(RCCAPB2PERIPH, ENABLE);
     Delay_Init();
+    RCC_APB2PeriphClockCmd(RCCAPB2PERIPH, ENABLE);
+    RCC_APB1PeriphClockCmd(RCCAPB1PERIPH, ENABLE);
 
-    // GPIO_PinRemapConfig(GPIO_Remap_USART1, ENABLE); // managed by AFPIO, enable PB6, PB7 as pins of USART1
-    GPIO_InitTypeDef gpioInit_A10 = {
-        // .GPIO_Mode = GPIO_Mode_AF_PP, // 配反了...
-        .GPIO_Mode = GPIO_Mode_IPU,
-        .GPIO_Pin = GPIO_Pin_10,
+    GPIO_PinRemapConfig(GPIO_Remap_I2C1, ENABLE);
+    GPIO_InitTypeDef gpioInit_B8 = {
+        .GPIO_Mode = GPIO_Mode_AF_OD,
+        .GPIO_Pin = GPIO_Pin_8,
         .GPIO_Speed = GPIO_Speed_10MHz};
-    GPIO_InitTypeDef gpioInit_A9 = {
-        // .GPIO_Mode = GPIO_Mode_IPU,
-        .GPIO_Mode = GPIO_Mode_AF_PP,
+    GPIO_InitTypeDef gpioInit_B9 = {
+        .GPIO_Mode = GPIO_Mode_AF_OD,
         .GPIO_Pin = GPIO_Pin_9,
         .GPIO_Speed = GPIO_Speed_10MHz};
-    GPIO_InitTypeDef gpioInit_C13 = {
-        .GPIO_Mode = GPIO_Mode_Out_PP,
-        .GPIO_Pin = GPIO_Pin_13,
-        .GPIO_Speed = GPIO_Speed_2MHz};
-    GPIO_Init(GPIOA, &gpioInit_A10);
-    GPIO_Init(GPIOA, &gpioInit_A9);
+    GPIO_InitTypeDef gpioInit_C13 = {// 见DS5319 p33
+                                     .GPIO_Mode = GPIO_Mode_Out_OD,
+                                     .GPIO_Pin = GPIO_Pin_13,
+                                     .GPIO_Speed = GPIO_Speed_2MHz};
+    GPIO_Init(GPIOB, &gpioInit_B8);
+    GPIO_Init(GPIOB, &gpioInit_B9);
     GPIO_Init(GPIOC, &gpioInit_C13);
 
-    USART_InitTypeDef usartInit = {
-        .USART_BaudRate = 115200,
-        // .USART_HardwareFlowControl = USART_HardwareFlowControl_None,
-        .USART_Mode = USART_Mode_Tx | USART_Mode_Rx,
-        .USART_Parity = USART_Parity_No,
-        .USART_StopBits = USART_StopBits_1,
-        .USART_WordLength = USART_WordLength_8b}; // 9b - 1b(parity) = 8b(data)
-    USART_Init(USART1, &usartInit);
-    USART_Cmd(USART1, ENABLE);
+    RCC_APB1PeriphResetCmd(RCC_APB1Periph_I2C1, ENABLE); // reset iic
+    RCC_APB1PeriphResetCmd(RCC_APB1Periph_I2C1, DISABLE);
+    I2C_InitTypeDef iicInit = {
+        .I2C_Mode = I2C_Mode_I2C,
+        .I2C_ClockSpeed = 400000,
+        .I2C_DutyCycle = I2C_DutyCycle_2};
+    I2C_Init(I2C1, &iicInit);
+    I2C_Cmd(I2C1, ENABLE);
 
-    uint8_t userData = 0;
+    Delay(500);
+    GPIO_SetBits(GPIOC, GPIO_Pin_13);
+    Delay(500);
+    if ((userI2CSendBytes(I2C1, &addr, init_commands, sizeof(init_commands)) == -1))
+    {
+        GPIO_ResetBits(GPIOC, GPIO_Pin_13);
+        while (1)
+            ;
+    }
+    GPIO_SetBits(GPIOC, GPIO_Pin_13);
+    Delay(500);
+    if ((userI2CSendBytes(I2C1, &addr, init_commands, sizeof(init_commands)) == -2))
+    {
+        GPIO_ResetBits(GPIOC, GPIO_Pin_13);
+        while (1)
+            ;
+    }
+    GPIO_SetBits(GPIOC, GPIO_Pin_13);
 
     while (1)
     {
-        userSerialReceive(USART1, &userData);
-        if (userData == '0')
-        {
-            GPIO_SetBits(GPIOC, GPIO_Pin_13); // PC13 的LED的另一端采用的是上接法
-        }
-        else
-        {
-            GPIO_ResetBits(GPIOC, GPIO_Pin_13);
-        }
+        togglePin();
     }
 }
 
-void userSerialTransmit(USART_TypeDef *usartTypedef_t, uint8_t *pData, uint16_t size)
+void togglePin(void)
 {
-    if(size == 0) return;
+    GPIO_SetBits(GPIOC, GPIO_Pin_13);
+    // DelayUS(1000); // 666, 怎么可能看见
+    Delay(1000);
+    GPIO_ResetBits(GPIOC, GPIO_Pin_13);
+    Delay(1000);
+}
 
-    for (uint32_t i = 0; i < size; i++)
+// 0: success, -1: addr failure, -2: send failure
+int userI2CSendBytes(I2C_TypeDef *i2cX, uint8_t *addr, uint8_t *pData, uint16_t size)
+{
+    // RM0008 24.3.3
+    // send START
+    while (I2C_GetFlagStatus(i2cX, I2C_FLAG_BUSY) == SET)
+        ;
+    I2C_GenerateSTART(i2cX, ENABLE);
+    while (I2C_GetFlagStatus(i2cX, I2C_FLAG_SB) == RESET)
+        ; // start bit
+
+    // slave addr send
+    I2C_ClearFlag(i2cX, I2C_FLAG_AF);
+    I2C_Send7bitAddress(i2cX, *addr, I2C_Direction_Transmitter); // same as I2C_SendData?
+    // I2C_SendData(i2cX, (*addr) & 0xfe);
+    while (1)
     {
-        while (USART_GetFlagStatus(usartTypedef_t, USART_FLAG_TXE) == RESET)
-            ;
-        // if (USART_GetFlagStatus(usartTypedef_t, USART_FLAG_TXE) == SET); // 不对
-        // USART_SendData(usartTypedef_t, *(pData + i));
-        USART_SendData(usartTypedef_t, pData[i]);
+        if (I2C_GetFlagStatus(i2cX, I2C_FLAG_ADDR) == SET)
+        {
+            break;
+        }
+        if (I2C_GetFlagStatus(i2cX, I2C_FLAG_AF) == SET)
+        {
+            I2C_GenerateSTOP(i2cX, ENABLE);
+            return -1;
+        }
     }
-    while (USART_GetFlagStatus(usartTypedef_t, USART_FLAG_TC) == RESET)
-        ;
-}
+    I2C_ReadRegister(i2cX, I2C_Register_SR1); // clear ADDR flg
+    I2C_ReadRegister(i2cX, I2C_Register_SR2); // clear ADDR flg
 
-void userSerialReceive(USART_TypeDef *usartTypedef_t, uint8_t *pData)
-{
-    while (USART_GetFlagStatus(usartTypedef_t, USART_FLAG_RXNE) == RESET)
-        ;
-    *pData = USART_ReceiveData(usartTypedef_t);
-}
+    // send bytes
+    for (uint16_t i = 0; i < size; i++)
+    {
+        while (1)
+        {
+            if (I2C_GetFlagStatus(i2cX, I2C_FLAG_TXE) == SET)
+            {
+                break;
+            }
+            if (I2C_GetFlagStatus(i2cX, I2C_FLAG_AF) == SET)
+            {
+                I2C_GenerateSTOP(i2cX, ENABLE);
+                return -2;
+            }
+        }
+        I2C_SendData(i2cX, pData[i]);
+    }
+    while (1)
+    {
+        if ((I2C_GetFlagStatus(i2cX, I2C_FLAG_TXE) == SET) && (I2C_GetFlagStatus(i2cX, I2C_FLAG_BTF) == SET))
+        {
+            break;
+        }
+        if (I2C_GetFlagStatus(i2cX, I2C_FLAG_AF) == SET)
+        {
+            I2C_GenerateSTOP(i2cX, ENABLE);
+            return -2;
+        }
+    }
 
-int fputc(int ch, FILE *file)
-{
-    while (USART_GetFlagStatus(USART1, USART_FLAG_TXE) == RESET)
-        ;
-    USART_SendData(USART1, (uint8_t)ch);
-    return ch;
+    // send STOP
+    I2C_GenerateSTOP(i2cX, ENABLE);
+    return 0;
 }
