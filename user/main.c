@@ -31,17 +31,17 @@ int main(void)
     RCC_APB2PeriphClockCmd(RCCAPB2PERIPH, ENABLE);
 
     GPIO_InitTypeDef gpioInit_B8 = {// scl
-        .GPIO_Mode = GPIO_Mode_Out_OD,
-        .GPIO_Pin = GPIO_Pin_8,
-        .GPIO_Speed = GPIO_Speed_10MHz};
+                                    .GPIO_Mode = GPIO_Mode_Out_OD,
+                                    .GPIO_Pin = GPIO_Pin_8,
+                                    .GPIO_Speed = GPIO_Speed_10MHz};
     GPIO_InitTypeDef gpioInit_B9 = {// sda
-        .GPIO_Mode = GPIO_Mode_Out_OD,
-        .GPIO_Pin = GPIO_Pin_9,
-        .GPIO_Speed = GPIO_Speed_10MHz};
+                                    .GPIO_Mode = GPIO_Mode_Out_OD,
+                                    .GPIO_Pin = GPIO_Pin_9,
+                                    .GPIO_Speed = GPIO_Speed_10MHz};
     GPIO_InitTypeDef gpioInit_C13 = {// 见DS5319 p33
-        .GPIO_Mode = GPIO_Mode_Out_OD,
-        .GPIO_Pin = GPIO_Pin_13,
-        .GPIO_Speed = GPIO_Speed_2MHz};
+                                     .GPIO_Mode = GPIO_Mode_Out_OD,
+                                     .GPIO_Pin = GPIO_Pin_13,
+                                     .GPIO_Speed = GPIO_Speed_2MHz};
     GPIO_Init(GPIOB, &gpioInit_B8);
     GPIO_Init(GPIOB, &gpioInit_B9);
     GPIO_Init(GPIOC, &gpioInit_C13);
@@ -95,7 +95,7 @@ void iic_send_start(void)
 {
     scl_write(1);
     sda_write(1);
-    DelayUs(1); // 确保稳定高电平
+    DelayUs(1);   // 确保稳定高电平
     sda_write(0); // SCL 高时 SDA 下降沿 → START
     DelayUs(1);
     scl_write(0); // 拉低 SCL，进入数据传输阶段
