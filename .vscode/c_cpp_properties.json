@@ -1,17 +1,16 @@
 {
     "configurations": [
         {
-            "name": "template_default",
+            "name": "Keil5",
             "includePath": [
-                "e:\\Study\\STM\\aaa_stm\\std_periph_driver\\inc",
-                "e:\\Study\\STM\\aaa_stm\\user",
-                "e:\\Study\\STM\\aaa_stm\\my_lib",
-                "e:\\Study\\STM\\aaa_stm\\my_lib\\font",
-                "e:\\Study\\STM\\aaa_stm\\my_lib\\font\\.h",
-                "D:\\Coding\\Keil5\\ARM\\ARMCC\\include",
+                "${workspaceFolder}\\std_periph_driver\\inc",
+                "${workspaceFolder}\\user",
+                "${workspaceFolder}\\my_lib",
+                "${workspaceFolder}\\my_lib\\font",
+                "${workspaceFolder}\\my_lib\\font\\.h",
+                "${workspaceFolder}\\startup",
+                "${workspaceFolder}\\std_periph_driver\\src","D:\\Coding\\Keil5\\ARM\\ARMCC\\include",
                 "D:\\Coding\\Keil5\\ARM\\ARMCC\\include\\rw",
-                "e:\\Study\\STM\\aaa_stm\\startup",
-                "e:\\Study\\STM\\aaa_stm\\std_periph_driver\\src",
                 "${default}"
             ],
             "defines": [
