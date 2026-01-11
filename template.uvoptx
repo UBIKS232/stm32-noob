@@ -120,7 +120,7 @@
         <SetRegEntry>
           <Number>0</Number>
           <Key>CMSIS_AGDI</Key>
-          <Name>-X"CMSIS-DAP" -U2706381432 -O718 -S8 -C0 -P00000000 -N00("ARM CoreSight SW-DP") -D00(1BA01477) -L00(0) -TO65554 -TC10000000 -TT10000000 -TP20 -TDS8007 -TDT0 -TDC1F -TIEFFFFFFFF -TIP8 -FO31 -FD20000000 -FC1000 -FN1 -FF0STM32F10x_128.FLM -FS08000000 -FL020000 -FP0($$Device:STM32F103C8$Flash\STM32F10x_128.FLM)</Name>
+          <Name>-X"Horco CMSIS-DAP v2" -U342741546243 -O718 -S8 -C0 -P00000000 -N00("ARM CoreSight SW-DP") -D00(1BA01477) -L00(0) -TO65554 -TC10000000 -TT10000000 -TP20 -TDS8007 -TDT0 -TDC1F -TIEFFFFFFFF -TIP8 -FO31 -FD20000000 -FC1000 -FN1 -FF0STM32F10x_128.FLM -FS08000000 -FL020000 -FP0($$Device:STM32F103C8$Flash\STM32F10x_128.FLM)</Name>
         </SetRegEntry>
         <SetRegEntry>
           <Number>0</Number>
@@ -157,25 +157,51 @@
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
-          <LineNumber>51</LineNumber>
+          <LineNumber>1063</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>0</Address>
+          <Address>134219904</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>0</BreakIfRCount>
-          <Filename>.\user\main.c</Filename>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>E:\Study\STM\aaa_stm\std_periph_driver\src\stm32f10x_adc.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression></Expression>
+          <Expression>\\template\std_periph_driver/src/stm32f10x_adc.c\1063</Expression>
+        </Bp>
+        <Bp>
+          <Number>1</Number>
+          <Type>0</Type>
+          <LineNumber>1060</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>134219894</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>E:\Study\STM\aaa_stm\std_periph_driver\src\stm32f10x_adc.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\template\std_periph_driver/src/stm32f10x_adc.c\1060</Expression>
         </Bp>
       </Breakpoint>
       <WatchWindow1>
         <Ww>
           <count>0</count>
           <WinNumber>1</WinNumber>
-          <ItemText>buf</ItemText>
+          <ItemText>adc_value</ItemText>
+        </Ww>
+        <Ww>
+          <count>1</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>ADC_GetInjectedConversionValue(((ADC_TypeDef *) ((((uint32_t)0x40000000) + 0x10000) + 0x2400))</ItemText>
+        </Ww>
+        <Ww>
+          <count>2</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>tmp</ItemText>
         </Ww>
       </WatchWindow1>
       <MemoryWindow1>
@@ -230,16 +256,8 @@
       <pMultCmdsp></pMultCmdsp>
       <SystemViewers>
         <Entry>
-          <Name>System Viewer\AFIO</Name>
+          <Name>System Viewer\ADC1</Name>
           <WinId>35902</WinId>
-        </Entry>
-        <Entry>
-          <Name>System Viewer\GPIOB</Name>
-          <WinId>35904</WinId>
-        </Entry>
-        <Entry>
-          <Name>System Viewer\I2C1</Name>
-          <WinId>35905</WinId>
         </Entry>
       </SystemViewers>
       <DebugDescription>
