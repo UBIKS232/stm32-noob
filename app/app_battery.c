@@ -67,7 +67,8 @@ void init_adc1()
  */
 void ADC1_2_IRQHandler(void){
     if(ADC_GetFlagStatus(ADC1, ADC_FLAG_JEOC) == SET){
+        ADC_ClearFlag(ADC1, ADC_FLAG_JEOC);
         uint16_t jdr1 = ADC_GetInjectedConversionValue(ADC1, ADC_InjectedChannel_1);
-        vbat = jdr1 * 6.216e-4; // (8.4f / 3.3f) / 4095.0f = 6.216e-4
+        vbat = jdr1 * 2.0513e-3; // 3.3 * (8.4f / 3.3f) / 4095.0f = 2.0513e-3
     }
 }

@@ -12,15 +12,15 @@ extern volatile float vbat;
 void test_battery(void)
 {
     init_usart2();
-    // init_adc1();
+    init_adc1();
 
     My_USART_Printf(USART2, "Test: ADC1, USART2, Delay.\n");
 
     while (1)
     {
-        My_USART_Printf(USART2, "11111111111111\n");
-        Delay(1000);
-        My_USART_Printf(USART2, "22222222222222\n");
-        // My_USART_Printf(USART2, "%.3f\n", vbat);
+        // My_USART_Printf(USART2, "11111111111111\n");
+        Delay(10);
+        // My_USART_Printf(USART2, "22222222222222\n");
+        My_USART_Printf(USART2, "%.4f\n", vbat);
     }
 }
