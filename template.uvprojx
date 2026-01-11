@@ -10,14 +10,15 @@
       <TargetName>default</TargetName>
       <ToolsetNumber>0x4</ToolsetNumber>
       <ToolsetName>ARM-ADS</ToolsetName>
+      <pArmCC>5060960::V5.06 update 7 (build 960)::.\ARMCC</pArmCC>
       <pCCUsed>5060960::V5.06 update 7 (build 960)::.\ARMCC</pCCUsed>
       <uAC6>0</uAC6>
       <TargetOption>
         <TargetCommonOption>
           <Device>STM32F103C8</Device>
           <Vendor>STMicroelectronics</Vendor>
-          <PackID>Keil.STM32F1xx_DFP.2.4.0</PackID>
-          <PackURL>http://www.keil.com/pack/</PackURL>
+          <PackID>Keil.STM32F1xx_DFP.2.4.1</PackID>
+          <PackURL>https://www.keil.com/pack/</PackURL>
           <Cpu>IRAM(0x20000000,0x00005000) IROM(0x08000000,0x00010000) CPUTYPE("Cortex-M3") CLOCK(12000000) ELITTLE</Cpu>
           <FlashUtilSpec></FlashUtilSpec>
           <StartupFile></StartupFile>
@@ -138,7 +139,7 @@
           </Flash1>
           <bUseTDR>1</bUseTDR>
           <Flash2>BIN\UL2CM3.DLL</Flash2>
-          <Flash3></Flash3>
+          <Flash3>"" ()</Flash3>
           <Flash4></Flash4>
           <pFcarmOut></pFcarmOut>
           <pFcarmGrp></pFcarmGrp>
@@ -340,7 +341,7 @@
               <MiscControls>--no-multibyte-chars</MiscControls>
               <Define></Define>
               <Undefine></Undefine>
-              <IncludePath>.\std_periph_driver\inc;.\user;.\my_lib;.\my_lib\font;.\my_lib\font\.h</IncludePath>
+              <IncludePath>.\std_periph_driver\inc;.\user;.\my_lib;.\my_lib\font;.\my_lib\font\.h;.\app\;.\app_test\</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -403,6 +404,51 @@
               <FileName>stm32f10x_it.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\user\stm32f10x_it.c</FilePath>
+            </File>
+            <File>
+              <FileName>config.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\user\config.h</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>app</GroupName>
+          <Files>
+            <File>
+              <FileName>app_battery.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\app\app_battery.c</FilePath>
+            </File>
+            <File>
+              <FileName>app_battery.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\app\app_battery.h</FilePath>
+            </File>
+            <File>
+              <FileName>app_usart2.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\app\app_usart2.c</FilePath>
+            </File>
+            <File>
+              <FileName>app_usart2.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\app\app_usart2.h</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>app_test</GroupName>
+          <Files>
+            <File>
+              <FileName>test_battery.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\app_test\test_battery.c</FilePath>
+            </File>
+            <File>
+              <FileName>test_battery.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\app_test\test_battery.h</FilePath>
             </File>
           </Files>
         </Group>
@@ -755,9 +801,6 @@
               <FilePath>.\my_lib\pid.c</FilePath>
             </File>
           </Files>
-        </Group>
-        <Group>
-          <GroupName>test</GroupName>
         </Group>
       </Groups>
     </Target>

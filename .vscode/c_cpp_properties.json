@@ -9,12 +9,15 @@
                 "${workspaceFolder}\\my_lib\\font",
                 "${workspaceFolder}\\my_lib\\font\\.h",
                 "${workspaceFolder}\\startup",
+                "${workspaceFolder}\\app",
+                "${workspaceFolder}\\app_test",
                 "${workspaceFolder}\\std_periph_driver\\src",
                 "D:\\Coding\\Keil5\\ARM\\ARMCC\\include",
                 "D:\\Coding\\Keil5\\ARM\\ARMCC\\include\\rw",
                 "${default}"
             ],
             "defines": [
+                "STM32F10X_MD",
                 "__CC_ARM",
                 "__arm__",
                 "__align(x)=",
