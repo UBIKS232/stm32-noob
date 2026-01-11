@@ -97,18 +97,28 @@ uint64_t GetUs(void)
 	uint64_t tick;
 	uint32_t mini_tick;
 	
-	SysTick->CTRL &= ~SysTick_CTRL_COUNTFLAG; // 清除COUNTFLAG
-	
-	tick = ulTicks; // 读取毫秒值
-	mini_tick = SysTick->VAL; // 读取SYSTICK的值
 	
 	// 直到无溢出标志
 	// 读取COUNTERFLAG也会清除它的值
-	while(SysTick->CTRL & SysTick_CTRL_COUNTFLAG) 
+	
+	__disable_irq();
+	
+	while(1)
 	{
-		mini_tick = SysTick->VAL;
-		tick = ulTicks;
+		tick = ulTicks; // 读取毫秒值
+		mini_tick = SysTick->VAL; // 读取SYSTICK的值
+		
+		if(SysTick->CTRL & SysTick_CTRL_COUNTFLAG)
+		{
+			ulTicks++;
+		}
+		else
+		{
+			break;
+		}
 	}
+	
+	__enable_irq();
 	
 	// 换算成微秒
 	tick *= 1000; // 毫秒部分乘以1000

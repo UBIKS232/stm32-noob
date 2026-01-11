@@ -161,6 +161,96 @@ __weak int My_SI2C_ReceiveBytes(SI2C_TypeDef *SI2C, uint8_t Addr, uint8_t *pBuff
 	return 0;
 }
 
+__weak int My_SI2C_RegReadBytes(SI2C_TypeDef *SI2C, uint8_t Addr, uint8_t Reg, uint8_t *pBuffer, uint16_t Size)
+{
+	sda_w(1);
+	scl_w(1);
+	
+	// #1. 发送起始位
+	sda_w(0);
+	delay(1);
+	
+	// #2. 发送从机地址+RW
+	if(SendByte(SI2C, Addr & 0xfe) != 0)
+	{
+		SendStop(SI2C);
+		return -1; // 寻址失败
+	}
+	
+	// #3. 发送寄存器地址
+	if(SendByte(SI2C, Reg) != 0)
+	{
+		SendStop(SI2C);
+		return -2; // 数据被拒收
+	}
+	
+	// #4. 发送重复起始位
+	scl_w(0);
+	sda_w(1);
+	delay(1);
+	scl_w(1);
+	delay(1);
+	sda_w(0);
+	delay(1);
+	
+	// #5. 发送从机地址+RW
+	if(SendByte(SI2C, Addr | 0x01) != 0)
+	{
+		SendStop(SI2C);
+		return -1; // 寻址失败
+	}
+	
+	// #6. 接收
+	for(uint16_t i=0; i<Size; i++)
+	{
+		pBuffer[i] = ReceiveByte(SI2C, (i==Size-1) ? 0 : 1);
+	}
+	
+	// #7. 发送停止位
+	SendStop(SI2C);
+	
+	return 0;
+}
+
+__weak int My_SI2C_RegWriteBytes(SI2C_TypeDef *SI2C, uint8_t Addr, uint8_t Reg, const uint8_t *pData, uint16_t Size)
+{
+	sda_w(1);
+	scl_w(1);
+	
+	// #1. 发送起始位
+	sda_w(0);
+	delay(1);
+	
+	// #2. 发送从机地址+RW
+	if(SendByte(SI2C, Addr & 0xfe) != 0)
+	{
+		SendStop(SI2C);
+		return -1; // 寻址失败
+	}
+	
+	// #3. 发送寄存器地址
+	if(SendByte(SI2C, Reg) != 0)
+	{
+		SendStop(SI2C);
+		return -2; // 数据被拒收
+	}
+	
+	// #4. 发送数据
+	for(uint16_t i=0; i<Size; i++)
+	{
+		if(SendByte(SI2C, pData[i]) != 0)
+		{
+			SendStop(SI2C);
+			return -2; // 数据被拒收
+		}
+	}
+	
+	// #5. 发送停止位
+	SendStop(SI2C);
+	
+	return 0;
+}
+
 //
 // @简介：发送一个字节
 //

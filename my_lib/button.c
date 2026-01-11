@@ -30,13 +30,13 @@ void My_Button_Init(Button_TypeDef *Button, Button_InitTypeDef *Button_InistStru
 {
 	Button->GPIOx = Button_InistStruct->GPIOx;
 	Button->GPIO_Pin = Button_InistStruct->GPIO_Pin;
-	Button->button_pressed_cb = Button_InistStruct->button_pressed_cb;
-	Button->button_released_cb = Button_InistStruct->button_released_cb;
-	Button->button_clicked_cb = Button_InistStruct->button_clicked_cb;
-	Button->button_long_pressed_cb = Button_InistStruct->button_long_pressed_cb;
-	Button->LongPressThreshold = Button_InistStruct->LongPressTime;
-	Button->ClickInterval = Button_InistStruct->ClickInterval;
-	Button->LongPressTickInterval = Button_InistStruct->LongPressTickInterval;
+	Button->button_pressed_cb = 0;
+	Button->button_released_cb = 0;
+	Button->button_clicked_cb = 0;
+	Button->button_long_pressed_cb = 0;
+	Button->LongPressThreshold = BUTTON_LONG_PRESS_THRESHOLD;
+	Button->ClickInterval = BUTTON_CLICK_INTERVAL;
+	Button->LongPressTickInterval = BUTTON_LONG_PRESS_TICK_INTERNVAL;
 	
 	// #1. 使能GPIOx的时钟
 	GPIOClockCmd(Button->GPIOx, 1);
@@ -124,6 +124,42 @@ void My_Button_Proc(Button_TypeDef *Button)
 uint8_t MyButton_GetState(Button_TypeDef *Button)
 {
 	return Button->LastState;
+}
+
+//
+// @简介：设置按钮的单击间隔，短于此间隔视为连击
+// @参数：Interval - 单击间隔（单位毫秒）
+//
+void My_Button_ClickIntervalConfig(Button_TypeDef *Button, uint32_t Interval)
+{
+	Button->ClickInterval = Interval;
+}
+
+void My_Button_LongPressConfig(Button_TypeDef *Button, uint32_t Throshold, uint32_t TickInterval)
+{
+	Button->LongPressThreshold = Throshold;
+	Button->LongPressTickInterval = TickInterval;
+}
+
+
+void My_Button_SetLongPressCb(Button_TypeDef *Button, void (*LongPressCb)(uint8_t ticks))
+{
+	Button->button_long_pressed_cb = LongPressCb;
+}
+
+void My_Button_SetPressCb(Button_TypeDef *Button, void (*PressCb)(void))
+{
+	Button->button_pressed_cb = PressCb;
+}
+
+void My_Button_SetReleaseCb(Button_TypeDef *Button, void (*ReleaseCb)(void))
+{
+	Button->button_released_cb = ReleaseCb;
+}
+
+void My_Button_SetClickCb(Button_TypeDef *Button, void (*ClickCb)(uint8_t clicks))
+{
+	Button->button_clicked_cb = ClickCb;
 }
 
 //

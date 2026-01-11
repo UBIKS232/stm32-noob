@@ -20,17 +20,6 @@ typedef struct
 	
 	uint16_t GPIO_Pin;     /* 按钮的引脚编号。
 	                              可以取GPIO_Pin_0..15中的一个 */
-	
-	/* 回调函数 */
-	void (*button_pressed_cb)(void);           // 按钮按下的回调函数
-	void (*button_released_cb)(void);          // 按钮松开的回调函数
-	void (*button_clicked_cb)(uint8_t clicks); // 按钮敲击的回调函数
-	void (*button_long_pressed_cb)(uint8_t ticks);     // 按钮长按的回调函数
-	
-	uint32_t LongPressTime; // 按钮长按时间阈值，单位毫秒
-	uint32_t LongPressTickInterval; // 长按后持续触发的间隔
-	uint32_t ClickInterval; // 连击时间间隔，单位毫秒
-	
 } Button_InitTypeDef;
 
 typedef struct 
@@ -60,8 +49,17 @@ typedef struct
 	
 } Button_TypeDef;
 
-   void My_Button_Init(Button_TypeDef *Button, Button_InitTypeDef *Button_InistStruct);
-   void My_Button_Proc(Button_TypeDef *Button);
+void My_Button_Init(Button_TypeDef *Button, Button_InitTypeDef *Button_InistStruct);
+void My_Button_Proc(Button_TypeDef *Button);
 uint8_t MyButton_GetState(Button_TypeDef *Button);
+
+void My_Button_SetLongPressCb(Button_TypeDef *Button, void (*LongPressCb)(uint8_t ticks));
+void My_Button_SetPressCb(Button_TypeDef *Button, void (*button_pressed_cb)(void));
+void My_Button_SetReleaseCb(Button_TypeDef *Button, void (*button_released_cb)(void));
+void My_Button_SetClickCb(Button_TypeDef *Button, void (*button_clicked_cb)(uint8_t clicks));
+
+void My_Button_ClickIntervalConfig(Button_TypeDef *Button, uint32_t Interval);
+void My_Button_LongPressConfig(Button_TypeDef *Button, uint32_t Throshold, uint32_t TickInterval);
+
 
 #endif

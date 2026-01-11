@@ -158,11 +158,14 @@ void SysTick_Handler(void)
 {
 }*/
 
-extern __IO uint64_t ulTicks;
+extern __IO uint32_t ulTicks;
 
 void SysTick_Handler(void)
 {
-	ulTicks++;
+	if(SysTick->CTRL & SysTick_CTRL_COUNTFLAG)
+	{
+		ulTicks++;
+	}
 }
 
 /**
