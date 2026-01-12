@@ -1,12 +1,85 @@
 #include "app_battery.h"
-#include "stm32f10x.h"
+
+#define VBAT_DELTA 0.1
+#define VBAT_FULL 7.9 // 100%
+#define VBAT_3IN4 7.4 // 75%
+#define VBAT_1IN2 7   // 50%
+#define VBAT_1IN5 6.5 // 20%
 
 extern volatile float vbat;
+// extern volatile uint8_t vbat_state;
+static uint32_t proc_last_time = 0;
+static uint8_t led_last_state = 0;
+
+static void init_batled(void);
+static void init_adc1(void);
+
+/**
+ * @brief 电池监测任务初始化: ADC1Injected, TIM2TRGO, LED
+ */
+void app_battery_init(void)
+{
+    init_adc1();
+    init_batled();
+}
+
+/**
+ * @brief 电池监测任务切片
+ */
+void app_battery_proc(void)
+{
+    if (vbat >= VBAT_FULL)
+    {
+        GPIO_WriteBit(GPIOA, GPIO_Pin_6 | GPIO_Pin_5 | GPIO_Pin_4, Bit_SET);
+        // GPIO_SetBits(GPIOA, GPIO_Pin_6);
+        // GPIO_SetBits(GPIOA, GPIO_Pin_5);
+        // GPIO_SetBits(GPIOA, GPIO_Pin_4);
+    }
+    else if (vbat >= VBAT_3IN4)
+    {
+        GPIO_ResetBits(GPIOA, GPIO_Pin_6);
+        GPIO_SetBits(GPIOA, GPIO_Pin_5);
+        GPIO_SetBits(GPIOA, GPIO_Pin_4);
+    }
+    else if (vbat >= VBAT_1IN2)
+    {
+        GPIO_ResetBits(GPIOA, GPIO_Pin_6);
+        GPIO_ResetBits(GPIOA, GPIO_Pin_5);
+        GPIO_SetBits(GPIOA, GPIO_Pin_4);
+    }
+    else if (vbat >= VBAT_1IN5)
+    {
+        GPIO_WriteBit(GPIOA, GPIO_Pin_6 | GPIO_Pin_5 | GPIO_Pin_4, Bit_RESET);
+        // GPIO_ResetBits(GPIOA, GPIO_Pin_6);
+        // GPIO_ResetBits(GPIOA, GPIO_Pin_5);
+        // GPIO_ResetBits(GPIOA, GPIO_Pin_4);
+    }
+    else
+    {
+        uint32_t now = GetTick();
+        if (now - proc_last_time > 200)
+        {
+            switch (led_last_state)
+            {
+            case 1:
+                GPIO_WriteBit(GPIOA, GPIO_Pin_6 | GPIO_Pin_5 | GPIO_Pin_4, Bit_RESET);
+                led_last_state = 0;
+                break;
+            case 0:
+                GPIO_WriteBit(GPIOA, GPIO_Pin_6 | GPIO_Pin_5 | GPIO_Pin_4, Bit_SET);
+                led_last_state = 1;
+                break;
+            }
+            // proc_last_time = GetTick();
+            proc_last_time = now;
+        }
+    }
+}
 
 /**
  * @brief 初始化ADC1, 注入序列CH8(PB0), 使能ADC1的JEOC标志位置位中断, 使用TIM2_TRGO触发采样, 在ADC1_2_IRQHandler内读取结果
  */
-void init_adc1()
+static void init_adc1(void)
 {
     // TIM2初始化
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE);
@@ -22,9 +95,9 @@ void init_adc1()
     TIM_Cmd(TIM2, ENABLE);
 
     // ADC1初始化
-    // PB0
     RCC_ADCCLKConfig(RCC_PCLK2_Div6);
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_ADC1 | RCC_APB2Periph_GPIOB, ENABLE);
+    // PB0
     GPIO_InitTypeDef gpiob0 = {0};
     gpiob0.GPIO_Mode = GPIO_Mode_AIN;
     gpiob0.GPIO_Pin = GPIO_Pin_0;
@@ -63,10 +136,27 @@ void init_adc1()
 }
 
 /**
+ * @brief 电量指示LED初始化: PA4, PA5, PA6
+ */
+static void init_batled(void)
+{
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
+
+    GPIO_InitTypeDef gpioa = {0};
+    gpioa.GPIO_Mode = GPIO_Mode_Out_PP;
+    gpioa.GPIO_Speed = GPIO_Speed_2MHz;
+
+    gpioa.GPIO_Pin = GPIO_Pin_4 | GPIO_Pin_5 | GPIO_Pin_6;
+    GPIO_Init(GPIOA, &gpioa);
+}
+
+/**
  * @brief ADC1中断响应函数, 读取ADC1在JEOC标志位置位中断发生后JDR1内的值
  */
-void ADC1_2_IRQHandler(void){
-    if(ADC_GetFlagStatus(ADC1, ADC_FLAG_JEOC) == SET){
+void ADC1_2_IRQHandler(void)
+{
+    if (ADC_GetFlagStatus(ADC1, ADC_FLAG_JEOC) == SET)
+    {
         ADC_ClearFlag(ADC1, ADC_FLAG_JEOC);
         uint16_t jdr1 = ADC_GetInjectedConversionValue(ADC1, ADC_InjectedChannel_1);
         vbat = jdr1 * 2.0513e-3; // 3.3 * (8.4f / 3.3f) / 4095.0f = 2.0513e-3

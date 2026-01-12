@@ -1,1 +1,6 @@
 #define TEST
+
+// #define APP_USART2_ENABLE
+// #define APP_BATTERY_ENABLE
+#define APP_BUTTON_ENABLE
+#define APP_PWM_ENABLE

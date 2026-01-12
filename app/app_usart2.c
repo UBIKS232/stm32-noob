@@ -1,10 +1,9 @@
 #include "app_usart2.h"
-#include "stm32f10x.h"
 
 /**
  * @brief 初始化USART2作为串口调试的接口, PA2: Tx, PA3: Rx, baudrate: 921600, 停止位: 1, 数据位: 8, 无校验, 调用my_lib中的方法实现消息收发
  */
-void init_usart2(void)
+static void init_usart2(void)
 {
     // PA2: Tx, PA3: Rx
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
@@ -29,4 +28,12 @@ void init_usart2(void)
 
     // 使能USART2
     USART_Cmd(USART2, ENABLE);
+}
+
+/**
+ * @brief 初始化USART2作为串口调试的接口, PA2: Tx, PA3: Rx, baudrate: 921600, 停止位: 1, 数据位: 8, 无校验, 调用my_lib中的方法实现消息收发
+ */
+void app_usart2_init(void)
+{
+    init_usart2();
 }

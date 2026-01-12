@@ -11,8 +11,10 @@ extern volatile float vbat;
  */
 void test_battery(void)
 {
-    init_usart2();
-    init_adc1();
+    // init_usart2();
+    // init_adc1(); // 已经是static了, 在这里使用会出错
+    app_usart2_init();
+    app_battery_init();
 
     My_USART_Printf(USART2, "Test: ADC1, USART2, Delay.\n");
 
