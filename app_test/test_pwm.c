@@ -13,16 +13,16 @@ void test_pwm(void)
     app_pwm_cmd(1);
 
     // 电机分别正转2s, 30%, 60% 90%
-    app_pwm_set_l(30);
-    app_pwm_set_r(30);
+    app_pwm_set_L(30);
+    app_pwm_set_R(30);
     Delay(2000);
 
-    // app_pwm_set_l(60);
-    // // app_pwm_set_r(60);
+    // app_pwm_set_L(60);
+    // // app_pwm_set_R(60);
     // Delay(2000);
 
-    // app_pwm_set_l(90);
-    // // app_pwm_set_r(90);
+    // app_pwm_set_L(90);
+    // // app_pwm_set_R(90);
     // Delay(2000);
 
     // 关闭电机

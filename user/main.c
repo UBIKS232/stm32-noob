@@ -9,11 +9,14 @@
 #ifdef TEST
 #include "test_battery.h"
 #include "test_pwm.h"
+#include "test_encoder.h"
 #endif
 
 volatile float vbat = 0.0f;
 // volatile uint8_t vbat_state = 0;
 volatile uint8_t pwm_state = 0;
+volatile int64_t encoder_L = 0;
+volatile int64_t encoder_R = 0;
 
 int main(void)
 {
@@ -33,11 +36,15 @@ int main(void)
 #ifdef APP_PWM_ENABLE
     app_pwm_init();
 #endif
+#ifdef APP_ENCODER_ENABLE
+    app_encoder_init();
+#endif
 #endif
 
 #ifdef TEST
     // test_battery();
-    test_pwm();
+    // test_pwm();
+    test_encoder();
 #endif
 
     while (1)
@@ -51,6 +58,9 @@ int main(void)
 #endif
 #ifdef APP_PWM_ENABLE
         // app_pwm_proc();
+#endif
+#ifdef APP_PWM_ENABLE
+        // app_encoder_proc();
 #endif
 #endif
     }

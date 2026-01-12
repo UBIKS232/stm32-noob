@@ -455,6 +455,16 @@
               <FileType>5</FileType>
               <FilePath>.\app\app_pwm.h</FilePath>
             </File>
+            <File>
+              <FileName>app_encoder.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\app\app_encoder.c</FilePath>
+            </File>
+            <File>
+              <FileName>app_encoder.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\app\app_encoder.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -479,6 +489,16 @@
               <FileName>test_pwm.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\app_test\test_pwm.h</FilePath>
+            </File>
+            <File>
+              <FileName>test_encoder.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\app_test\test_encoder.c</FilePath>
+            </File>
+            <File>
+              <FileName>test_encoder.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\app_test\test_encoder.h</FilePath>
             </File>
           </Files>
         </Group>

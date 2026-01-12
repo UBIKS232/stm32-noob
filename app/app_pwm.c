@@ -51,7 +51,7 @@ void app_pwm_cmd(uint8_t state)
  * @brief 左电机控制
  * @param float duty: 占空比, 取值 -100.0 ~ +100.0
  */
-void app_pwm_set_l(float duty)
+void app_pwm_set_L(float duty)
 {
     float sign; // 符号, pos: +1, neg: -1
 
@@ -81,7 +81,7 @@ void app_pwm_set_l(float duty)
  * @brief 右电机控制
  * @param float duty: 占空比, 取值 -100.0 ~ +100.0
  */
-void app_pwm_set_r(float duty)
+void app_pwm_set_R(float duty)
 {    float sign; // 符号, pos: +1, neg: -1
 
     // 数据准备

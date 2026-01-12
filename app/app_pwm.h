@@ -6,7 +6,7 @@
 void app_pwm_init(void);
 void app_pwm_proc(void);
 void app_pwm_cmd(uint8_t state);
-void app_pwm_set_l(float duty);
-void app_pwm_set_r(float duty);
+void app_pwm_set_L(float duty);
+void app_pwm_set_R(float duty);
 
 #endif // __APP_PWM_H__

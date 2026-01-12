@@ -124,12 +124,12 @@ static void init_adc1(void)
     // 使能ADC1的JEOC标志位置位中断
     ADC_ITConfig(ADC1, ADC_IT_JEOC, ENABLE);
     // 配置NVIC
-    NVIC_InitTypeDef nvic_adc1 = {0};
-    nvic_adc1.NVIC_IRQChannel = ADC1_2_IRQn;
-    nvic_adc1.NVIC_IRQChannelCmd = ENABLE;
-    nvic_adc1.NVIC_IRQChannelPreemptionPriority = 0;
-    nvic_adc1.NVIC_IRQChannelSubPriority = 2;
-    NVIC_Init(&nvic_adc1);
+    NVIC_InitTypeDef nvic = {0};
+    nvic.NVIC_IRQChannel = ADC1_2_IRQn;
+    nvic.NVIC_IRQChannelCmd = ENABLE;
+    nvic.NVIC_IRQChannelPreemptionPriority = 0;
+    nvic.NVIC_IRQChannelSubPriority = 2;
+    NVIC_Init(&nvic);
 
     // 使能ADC1
     ADC_Cmd(ADC1, ENABLE);
