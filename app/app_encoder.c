@@ -1,7 +1,16 @@
 #include "app_encoder.h"
+#include "delay.h"
 
-extern volatile int64_t encoder_L;
-extern volatile int64_t encoder_R;
+#define RATIO 0.8018f // 360 / ((30613 / 1500) * 22)
+
+extern volatile int64_t encoder_acc_L;
+extern volatile int64_t encoder_acc_R;
+extern volatile int8_t encoder_direction_L;
+extern volatile int8_t encoder_direction_R;
+extern volatile uint64_t encoder_t0_L;
+extern volatile uint64_t encoder_t0_R;
+extern volatile uint64_t encoder_t1_L;
+extern volatile uint64_t encoder_t1_R;
 
 static void init_encoder_L(void);
 static void init_encoder_R(void);
@@ -19,6 +28,40 @@ void app_encoder_init(void)
  * @brief encoder任务切片
  */
 void app_encoder_proc(void) {}
+
+/**
+ * @brief 读取左轮胎实际旋转的角度
+ * @retval float theta: 左轮胎实际旋转的角度
+ */
+float app_encoder_getpos_L(void)
+{
+    return (encoder_acc_L * RATIO);
+}
+
+/**
+ * @brief 读取右轮胎实际旋转的角度
+ * @retval float theta: 右轮胎实际旋转的角度
+ */
+float app_encoder_getpos_R(void)
+{
+    return (encoder_acc_R * RATIO);
+}
+
+/**
+ * @brief T法测量左轮胎转速
+ * @retval float w: 左轮胎角速度
+ */
+float app_encoder_getw_L(void){
+    return ((encoder_direction_L / ((encoder_t1_L - encoder_t0_L) * 10e-6)) * RATIO);
+}
+
+/**
+ * @brief T法测量右轮胎转速
+ * @retval float w: 右轮胎角速度
+ */
+float app_encoder_getw_R(void){
+    return ((encoder_direction_R / ((encoder_t1_R - encoder_t0_R) * 10e-6)) * RATIO);
+}
 
 /**
  * @brief 初始化左编码器, A: PB14, B: PB15
@@ -84,25 +127,32 @@ static void init_encoder_R(void)
 }
 
 /**
- * @brief EXTI line 3 中断响应函数, 右电机A相
+ * @brief EXTI line 3 中断响应函数, 右电机A相, 更新编码器累加值, 累加方向, 获取编码器连续两次更新时刻
  */
 void EXTI3_IRQHandler(void)
 {
     EXTI_ClearFlag(EXTI_Line3); // 防止反复进入中断
 
+    // 获取电平
     uint8_t phase_a = GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_3);
     uint8_t phase_b = GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_4);
+
+    // 获取更新时刻
+    encoder_t0_R = encoder_t1_R;
+    encoder_t1_R = GetUs();
 
     if (phase_a == Bit_SET)
     {
         // upedge
         if (phase_b == Bit_SET)
         {
-            encoder_R--;
+            encoder_acc_R--;
+            encoder_direction_R = -1;
         }
         else
         {
-            encoder_R++;
+            encoder_acc_R++;
+            encoder_direction_R = 1;
         }
     }
     else
@@ -110,17 +160,19 @@ void EXTI3_IRQHandler(void)
         // downedge
         if (phase_b == Bit_SET)
         {
-            encoder_R++;
+            encoder_acc_R++;
+            encoder_direction_R = 1;
         }
         else
         {
-            encoder_R--;
+            encoder_acc_R--;
+            encoder_direction_R = -1;
         }
     }
 }
 
 /**
- * @brief EXTI line 14 中断响应函数, 左电机A相
+ * @brief EXTI line 14 中断响应函数, 左电机A相, 更新编码器累加值, 累加方向, 获取编码器连续两次更新时刻
  */
 void EXTI15_10_IRQHandler(void)
 {
@@ -129,19 +181,28 @@ void EXTI15_10_IRQHandler(void)
     {
         EXTI_ClearFlag(EXTI_Line14); // 防止反复进入中断
 
+        // 获取电平
         uint8_t phase_a = GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_14);
         uint8_t phase_b = GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_15);
+
+        // 获取更新时刻
+        encoder_t0_L = encoder_t1_L;
+        encoder_t1_L = GetUs();
 
         if (phase_a == Bit_SET)
         {
             // upedge
             if (phase_b == Bit_SET)
             {
-                encoder_L--;
+                // encoder_acc_L--;
+                encoder_acc_L++;
+                encoder_direction_L = 1;
             }
             else
             {
-                encoder_L++;
+                // encoder_acc_L++;
+                encoder_acc_L--;
+                encoder_direction_L = -1;
             }
         }
         else
@@ -149,11 +210,15 @@ void EXTI15_10_IRQHandler(void)
             // downedge
             if (phase_b == Bit_SET)
             {
-                encoder_L++;
+                // encoder_acc_L++;
+                encoder_acc_L--;
+                encoder_direction_L = -1;
             }
             else
             {
-                encoder_L--;
+                // encoder_acc_L--;
+                encoder_acc_L++;
+                encoder_direction_L = 1;
             }
         }
     }

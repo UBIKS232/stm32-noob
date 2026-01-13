@@ -12,11 +12,17 @@
 #include "test_encoder.h"
 #endif
 
-volatile float vbat = 0.0f;
+volatile float vbat = 0.0f; // battery volatage
 // volatile uint8_t vbat_state = 0;
-volatile uint8_t pwm_state = 0;
-volatile int64_t encoder_L = 0;
-volatile int64_t encoder_R = 0;
+volatile uint8_t pwm_state = 0; // tell TB6612 to be on or not
+volatile int64_t encoder_acc_L = 0; // encoder L: accumulated value
+volatile int64_t encoder_acc_R = 0; // encoder R: accumulated value
+volatile uint64_t encoder_t0_L = 0; // encoder L: last time t0, in 'us'
+volatile uint64_t encoder_t0_R = 0; // encoder R: last time t0, in 'us'
+volatile uint64_t encoder_t1_L = 0; // encoder L: this time t1, in 'us'
+volatile uint64_t encoder_t1_R = 0; // encoder R: this time t1, in 'us'
+volatile int8_t encoder_direction_L = 0; // encoder L: T method direction
+volatile int8_t encoder_direction_R = 0; // encoder R: T method direction
 
 int main(void)
 {
@@ -44,7 +50,9 @@ int main(void)
 #ifdef TEST
     // test_battery();
     // test_pwm();
-    test_encoder();
+    // test_encoder();
+    // test_encoder_Mmethod();
+    test_encoder_Tmethod();
 #endif
 
     while (1)
