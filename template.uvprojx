@@ -465,6 +465,16 @@
               <FileType>5</FileType>
               <FilePath>.\app\app_encoder.h</FilePath>
             </File>
+            <File>
+              <FileName>app_mpu.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\app\app_mpu.c</FilePath>
+            </File>
+            <File>
+              <FileName>app_mpu.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\app\app_mpu.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -499,6 +509,16 @@
               <FileName>test_encoder.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\app_test\test_encoder.h</FilePath>
+            </File>
+            <File>
+              <FileName>test_mpu.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\app_test\test_mpu.c</FilePath>
+            </File>
+            <File>
+              <FileName>test_mpu.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\app_test\test_mpu.h</FilePath>
             </File>
           </Files>
         </Group>

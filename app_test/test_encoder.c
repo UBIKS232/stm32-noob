@@ -62,10 +62,11 @@ void test_encoder_Tmethod(void){
 
     while (1)
     {
-        float pos_L = app_encoder_getpos_L();
-        float pos_R = app_encoder_getpos_R();
+        // float pos_L = app_encoder_getpos_L();
+        // float pos_R = app_encoder_getpos_R();
 
-        My_USART_Printf(USART2, "%.2f,%.2f,%.2f,%.2f\n", pos_L, pos_R, app_encoder_getw_L(), app_encoder_getw_R());
+        // My_USART_Printf(USART2, "%.2f,%.2f,%.2f,%.2f\n", pos_L, pos_R, app_encoder_getw_L(), app_encoder_getw_R());
+        My_USART_Printf(USART2, "%.2f,%.2f\n", app_encoder_getw_L(), app_encoder_getw_R());
 
         Delay(1); //  dt = 1ms
     }

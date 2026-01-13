@@ -2,6 +2,7 @@
 #include "delay.h"
 
 #define RATIO 0.8018f // 360 / ((30613 / 1500) * 22)
+#define MAX(a, b) (((a) > (b)) ? (a) : (b))
 
 extern volatile int64_t encoder_acc_L;
 extern volatile int64_t encoder_acc_R;
@@ -51,16 +52,82 @@ float app_encoder_getpos_R(void)
  * @brief T法测量左轮胎转速
  * @retval float w: 左轮胎角速度
  */
-float app_encoder_getw_L(void){
-    return ((encoder_direction_L / ((encoder_t1_L - encoder_t0_L) * 10e-6)) * RATIO);
+float app_encoder_getw_L(void)
+{
+    __disable_irq();
+
+    int8_t cpy_encoder_direction_L = encoder_direction_L;
+    uint64_t cpy_encoder_t0_L = encoder_t0_L;
+    uint64_t cpy_encoder_t1_L = encoder_t1_L;
+
+    __enable_irq();
+
+    uint64_t now = GetUs();
+    uint64_t dt = MAX(cpy_encoder_t1_L - cpy_encoder_t0_L, now - cpy_encoder_t1_L);
+
+    return (RATIO * cpy_encoder_direction_L / (dt * 1.0e-6f));
+
+    // 下面这样写会导致严重的毛刺!! GetUs()被反复调用和打断, 而t0, t1又在不断更新, 时间值会更容易出现异常.
+    // return ((encoder_direction_L / (MAX(encoder_t1_L - encoder_t0_L, GetUs() - encoder_t1_L) * 1.0e-6)) * RATIO);
 }
 
 /**
  * @brief T法测量右轮胎转速
  * @retval float w: 右轮胎角速度
  */
-float app_encoder_getw_R(void){
-    return ((encoder_direction_R / ((encoder_t1_R - encoder_t0_R) * 10e-6)) * RATIO);
+float app_encoder_getw_R(void)
+{
+    __disable_irq();
+
+    int8_t cpy_encoder_direction_R = encoder_direction_R;
+    uint64_t cpy_encoder_t0_R = encoder_t0_R;
+    uint64_t cpy_encoder_t1_R = encoder_t1_R;
+
+    __enable_irq();
+
+    uint64_t now = GetUs();
+    uint64_t dt = MAX(cpy_encoder_t1_R - cpy_encoder_t0_R, now - cpy_encoder_t1_R);
+
+    return (RATIO * cpy_encoder_direction_R / (dt * 1.0e-6f));
+}
+
+/**
+ * @brief EXTI line 14 中断响应函数, 左电机A相, 更新编码器累加值, 累加方向, 获取编码器连续两次更新时刻
+ */
+void EXTI15_10_IRQHandler(void)
+{
+    // 多个中断的响应函数, 因此需要判断
+    if (EXTI_GetFlagStatus(EXTI_Line14) == SET)
+    {
+        EXTI_ClearFlag(EXTI_Line14); // 防止反复进入中断
+
+        // 获取电平
+        uint8_t phase_a = GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_14);
+        uint8_t phase_b = GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_15);
+
+        // 获取更新时刻
+        encoder_t0_L = encoder_t1_L;
+        encoder_t1_L = GetUs();
+
+        if (((phase_a == Bit_SET) && (phase_b == Bit_SET)) ||
+            ((phase_a == Bit_RESET) && (phase_b == Bit_RESET)))
+        {
+            encoder_acc_L++;
+            if (encoder_direction_L < 0)
+                encoder_direction_L = 0; // 判断过零
+            else
+                encoder_direction_L = 1;
+        }
+        else
+        {
+            // encoder_acc_L++;
+            encoder_acc_L--;
+            if (encoder_direction_L > 0)
+                encoder_direction_L = 0; // 判断过零
+            else
+                encoder_direction_L = -1;
+        }
+    }
 }
 
 /**
@@ -141,85 +208,21 @@ void EXTI3_IRQHandler(void)
     encoder_t0_R = encoder_t1_R;
     encoder_t1_R = GetUs();
 
-    if (phase_a == Bit_SET)
+    if (((phase_a == Bit_SET) && (phase_b == Bit_SET)) ||
+        ((phase_a == Bit_RESET) && (phase_b == Bit_RESET)))
     {
-        // upedge
-        if (phase_b == Bit_SET)
-        {
-            encoder_acc_R--;
-            encoder_direction_R = -1;
-        }
+        encoder_acc_R--;
+        if (encoder_direction_R > 0)
+            encoder_direction_R = 0; // 过零
         else
-        {
-            encoder_acc_R++;
-            encoder_direction_R = 1;
-        }
+            encoder_direction_R = -1;
     }
     else
     {
-        // downedge
-        if (phase_b == Bit_SET)
-        {
-            encoder_acc_R++;
+        encoder_acc_R++;
+        if (encoder_direction_R < 0)
+            encoder_direction_R = 0; // 过零
+        else
             encoder_direction_R = 1;
-        }
-        else
-        {
-            encoder_acc_R--;
-            encoder_direction_R = -1;
-        }
-    }
-}
-
-/**
- * @brief EXTI line 14 中断响应函数, 左电机A相, 更新编码器累加值, 累加方向, 获取编码器连续两次更新时刻
- */
-void EXTI15_10_IRQHandler(void)
-{
-    // 多个中断的响应函数, 因此需要判断
-    if (EXTI_GetFlagStatus(EXTI_Line14) == SET)
-    {
-        EXTI_ClearFlag(EXTI_Line14); // 防止反复进入中断
-
-        // 获取电平
-        uint8_t phase_a = GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_14);
-        uint8_t phase_b = GPIO_ReadInputDataBit(GPIOB, GPIO_Pin_15);
-
-        // 获取更新时刻
-        encoder_t0_L = encoder_t1_L;
-        encoder_t1_L = GetUs();
-
-        if (phase_a == Bit_SET)
-        {
-            // upedge
-            if (phase_b == Bit_SET)
-            {
-                // encoder_acc_L--;
-                encoder_acc_L++;
-                encoder_direction_L = 1;
-            }
-            else
-            {
-                // encoder_acc_L++;
-                encoder_acc_L--;
-                encoder_direction_L = -1;
-            }
-        }
-        else
-        {
-            // downedge
-            if (phase_b == Bit_SET)
-            {
-                // encoder_acc_L++;
-                encoder_acc_L--;
-                encoder_direction_L = -1;
-            }
-            else
-            {
-                // encoder_acc_L--;
-                encoder_acc_L++;
-                encoder_direction_L = 1;
-            }
-        }
     }
 }
