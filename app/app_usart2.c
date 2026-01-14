@@ -15,6 +15,7 @@ static void init_usart2(void)
     gpioa.GPIO_Mode = GPIO_Mode_IPU;
     gpioa.GPIO_Pin = GPIO_Pin_3;
     GPIO_Init(GPIOA, &gpioa); // Rx
+    // GPIO_WriteBit(GPIOA, GPIO_Pin_2 | GPIO_Pin_3, Bit_SET);
 
     // USART2
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);

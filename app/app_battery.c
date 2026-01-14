@@ -8,8 +8,8 @@
 
 extern volatile float vbat;
 // extern volatile uint8_t vbat_state;
-static uint32_t proc_last_time = 0;
-static uint8_t led_last_state = 0;
+static uint32_t app_battery_proc_last_time = 0;
+static uint8_t app_battery_led_last_state = 0;
 
 static void init_batled(void);
 static void init_adc1(void);
@@ -56,22 +56,23 @@ void app_battery_proc(void)
     }
     else
     {
+        // 似乎可以用PERIODIC(T)来写?
         uint32_t now = GetTick();
-        if (now - proc_last_time > 200)
+        if (now - app_battery_proc_last_time > 200)
         {
-            switch (led_last_state)
+            switch (app_battery_led_last_state)
             {
             case 1:
                 GPIO_WriteBit(GPIOA, GPIO_Pin_6 | GPIO_Pin_5 | GPIO_Pin_4, Bit_RESET);
-                led_last_state = 0;
+                app_battery_led_last_state = 0;
                 break;
             case 0:
                 GPIO_WriteBit(GPIOA, GPIO_Pin_6 | GPIO_Pin_5 | GPIO_Pin_4, Bit_SET);
-                led_last_state = 1;
+                app_battery_led_last_state = 1;
                 break;
             }
-            // proc_last_time = GetTick();
-            proc_last_time = now;
+            // app_battery_proc_last_time = GetTick();
+            app_battery_proc_last_time = now;
         }
     }
 }

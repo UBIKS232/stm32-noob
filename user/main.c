@@ -32,6 +32,9 @@ volatile float gx = 0.0;
 volatile float gy = 0.0;
 volatile float gz = 0.0;
 volatile float temp = 0.0;
+volatile float yaw = 0.0;   // 单位: °
+volatile float pitch = 0.0; // 单位: °
+volatile float roll = 0.0;  // 单位: °
 
 int main(void)
 {

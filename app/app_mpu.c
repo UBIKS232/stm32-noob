@@ -2,6 +2,8 @@
 #include "i2c.h"
 #include "delay.h"
 #include "config.h"
+#include "task.h"
+#include "math.h" // 资源占用大
 
 // mpu base addr
 #define MPU_ADDR 0xD0
@@ -34,6 +36,12 @@
 #define G_I2F 6.1035e-2
 // int16_t range -2^15 ~ 2^15 -> float range -2.0~2.0
 #define A_I2F 6.1035e-5
+// rad -> degree
+#define A_R2D 57.29578f
+// dt
+#define DELTA_T 0.005f
+// compound filter ratio
+#define COMPOUND_FILTER 0.95238f
 
 extern volatile float ax;
 extern volatile float ay;
@@ -42,6 +50,11 @@ extern volatile float gx;
 extern volatile float gy;
 extern volatile float gz;
 extern volatile float temp;
+extern volatile float yaw;
+extern volatile float pitch;
+extern volatile float roll;
+
+// static uint32_t app_mpu_proc_last_time = 0;
 
 static void init_i2c1(void);
 static void reg_wr(uint8_t addr, uint8_t data);
@@ -69,10 +82,38 @@ void app_mpu_init(void)
 }
 
 /**
- * @brief MPU6050任务切片
+ * @brief MPU6050任务切片, 周期为5毫秒
  */
-void app_mpu_proc(void) {
+void app_mpu_proc(void)
+{
+    PERIODIC(5);
+
     app_mpu_update();
+
+    /**
+     * 陀螺仪解算欧拉角:
+     * 角加速度的另一种积分方法,
+     * 在MPU6050采样率为1kHz的情况下, 使用MPU的FIFO,
+     * 对5ms内的5次数据进行矩形积分,
+     * 但是会占用I2C以及CPU资源
+     */
+    float yaw_g = yaw + gz * DELTA_T;
+    float pitch_g = pitch + gx * DELTA_T;
+    float roll_g = roll - gy * DELTA_T;
+
+    /**
+     * 加速度计解算欧拉角:
+     */
+    float yaw_a = 0.0f;
+    float pitch_a = atan2(ay, az) * A_R2D;
+    float roll_a = atan2(ax, az) * A_R2D;
+
+    /**
+     * 互补滤波
+     */
+    pitch = COMPOUND_FILTER * pitch_a + (1 - COMPOUND_FILTER) * pitch_g;
+    yaw = COMPOUND_FILTER * yaw_a + (1 - COMPOUND_FILTER) * yaw_g;
+    roll = COMPOUND_FILTER * roll_a + (1 - COMPOUND_FILTER) * roll_g;
 }
 
 /**
