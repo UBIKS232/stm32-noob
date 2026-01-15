@@ -13,6 +13,7 @@
 
 #include "pid.h"
 
+// 判断是否是第一次运行, 以保证ITerm和DTerm的正确性(它们都依赖历史值)
 #define INVALID_TICK 0xffffffffffffffff
 
 //
@@ -31,7 +32,7 @@ void PID_Init(PID_TypeDef *PID, PID_InitTypeDef *PID_InitStruct)
 	PID->OutputLowerLimit = PID->Init.OutputLowerLimit;
 	PID->OutputUpperLimit = PID->Init.OutputUpperLimit;
 	PID->ITerm = PID->Init.DefaultOutput;
-	PID->LastTime = INVALID_TICK;
+	PID->LastTime = INVALID_TICK; // attention
 	PID->LastInput = 0;
 	PID->ManualOutput = PID->Init.DefaultOutput;
 	PID->Manual = 0;
@@ -52,7 +53,7 @@ void PID_Reset(PID_TypeDef *PID)
 //
 // @简介：执行一次PID运算并得出控制器当前的输出值
 // @参数：PID - PID算法句柄
-// @参数：Input  - 传感器的输入值
+// @参数：Input - 传感器的输入值
 // @返回：控制器当前的输出值
 //
 float PID_Compute1(PID_TypeDef *PID, float Input, uint64_t now)

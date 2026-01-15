@@ -475,6 +475,16 @@
               <FileType>5</FileType>
               <FilePath>.\app\app_mpu.h</FilePath>
             </File>
+            <File>
+              <FileName>app_motor.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\app\app_motor.c</FilePath>
+            </File>
+            <File>
+              <FileName>app_motor.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\app\app_motor.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

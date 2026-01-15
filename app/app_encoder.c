@@ -1,8 +1,10 @@
 #include "app_encoder.h"
 #include "delay.h"
 
-#define RATIO 0.8018f // 360 / ((30613 / 1500) * 22)
+#define RATIO 0.01399402209f // (2 * PI / ((30613 / 1500) * 22))
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
+// compound filter ratio
+#define COMPOUND_FILTER 0.3f
 
 extern volatile int64_t encoder_acc_L;
 extern volatile int64_t encoder_acc_R;
@@ -12,6 +14,10 @@ extern volatile uint64_t encoder_t0_L;
 extern volatile uint64_t encoder_t0_R;
 extern volatile uint64_t encoder_t1_L;
 extern volatile uint64_t encoder_t1_R;
+extern volatile float encoder_raw_w_L;
+extern volatile float encoder_raw_w_R;
+extern volatile float encoder_filtered_w_L;
+extern volatile float encoder_filtered_w_R;
 
 static void init_encoder_L(void);
 static void init_encoder_R(void);
@@ -32,7 +38,7 @@ void app_encoder_proc(void) {}
 
 /**
  * @brief 读取左轮胎实际旋转的角度
- * @retval float theta: 左轮胎实际旋转的角度
+ * @retval float theta: 左轮胎实际旋转的角度(rad)
  */
 float app_encoder_getpos_L(void)
 {
@@ -41,7 +47,7 @@ float app_encoder_getpos_L(void)
 
 /**
  * @brief 读取右轮胎实际旋转的角度
- * @retval float theta: 右轮胎实际旋转的角度
+ * @retval float theta: 右轮胎实际旋转的角度(rad)
  */
 float app_encoder_getpos_R(void)
 {
@@ -50,7 +56,7 @@ float app_encoder_getpos_R(void)
 
 /**
  * @brief T法测量左轮胎转速
- * @retval float w: 左轮胎角速度
+ * @retval float w: 左轮胎角速度(rad/s)
  */
 float app_encoder_getw_L(void)
 {
@@ -65,7 +71,14 @@ float app_encoder_getw_L(void)
     uint64_t now = GetUs();
     uint64_t dt = MAX(cpy_encoder_t1_L - cpy_encoder_t0_L, now - cpy_encoder_t1_L);
 
-    return (RATIO * cpy_encoder_direction_L / (dt * 1.0e-6f));
+    encoder_raw_w_L = (RATIO * cpy_encoder_direction_L / (dt * 1.0e-6f));
+
+    encoder_filtered_w_L = COMPOUND_FILTER * encoder_raw_w_L + (1.0f - COMPOUND_FILTER) * encoder_filtered_w_L;
+
+    // if(encoder_raw_w_L <= 4) return encoder_raw_w_L;
+    // else return encoder_filtered_w_L;
+
+    return encoder_filtered_w_L;
 
     // 下面这样写会导致严重的毛刺!! GetUs()被反复调用和打断, 而t0, t1又在不断更新, 时间值会更容易出现异常.
     // return ((encoder_direction_L / (MAX(encoder_t1_L - encoder_t0_L, GetUs() - encoder_t1_L) * 1.0e-6)) * RATIO);
@@ -73,7 +86,7 @@ float app_encoder_getw_L(void)
 
 /**
  * @brief T法测量右轮胎转速
- * @retval float w: 右轮胎角速度
+ * @retval float w: 右轮胎角速度(rad/s)
  */
 float app_encoder_getw_R(void)
 {
@@ -88,7 +101,14 @@ float app_encoder_getw_R(void)
     uint64_t now = GetUs();
     uint64_t dt = MAX(cpy_encoder_t1_R - cpy_encoder_t0_R, now - cpy_encoder_t1_R);
 
-    return (RATIO * cpy_encoder_direction_R / (dt * 1.0e-6f));
+    encoder_raw_w_R = (RATIO * cpy_encoder_direction_R / (dt * 1.0e-6f));
+
+    encoder_filtered_w_R = COMPOUND_FILTER * encoder_raw_w_R + (1.0f - COMPOUND_FILTER) * encoder_filtered_w_R;
+
+    return encoder_filtered_w_R;
+    // return encoder_raw_w_R;
+
+    // return (RATIO * cpy_encoder_direction_R / (dt * 1.0e-6f));
 }
 
 /**

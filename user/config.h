@@ -1,12 +1,14 @@
-#define TEST
+// #define TEST
 
 // #define USE_MPU6050
 #define USE_MPU6500
 
 #define APP_USART2_ENABLE
-// #define APP_BATTERY_ENABLE
-// #define APP_BUTTON_ENABLE
-// #define APP_PWM_ENABLE
-// #define APP_ENCODER_ENABLE
+#define APP_BATTERY_ENABLE
+#define APP_BUTTON_ENABLE
+#define APP_PWM_ENABLE
+#define APP_ENCODER_ENABLE
 // #define APP_MPU_ENABLE
+#define APP_MOTOR_ENABLE
+
 

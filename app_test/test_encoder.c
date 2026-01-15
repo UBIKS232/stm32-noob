@@ -6,6 +6,10 @@
 
 extern volatile int64_t encoder_acc_L;
 extern volatile int64_t encoder_acc_R;
+extern volatile float encoder_raw_w_L;
+extern volatile float encoder_raw_w_R;
+extern volatile float encoder_filtered_w_L;
+extern volatile float encoder_filtered_w_R;
 
 static volatile float last_pos_L = 0.0f; // M method
 static volatile float last_pos_R = 0.0f; // M method
@@ -66,7 +70,7 @@ void test_encoder_Tmethod(void){
         // float pos_R = app_encoder_getpos_R();
 
         // My_USART_Printf(USART2, "%.2f,%.2f,%.2f,%.2f\n", pos_L, pos_R, app_encoder_getw_L(), app_encoder_getw_R());
-        My_USART_Printf(USART2, "%.2f,%.2f\n", app_encoder_getw_L(), app_encoder_getw_R());
+        My_USART_Printf(USART2, "%.2f,%.2f\n", app_encoder_getw_L(), encoder_raw_w_L);
 
         Delay(1); //  dt = 1ms
     }

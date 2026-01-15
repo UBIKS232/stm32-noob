@@ -3,7 +3,8 @@
 #include "delay.h"
 #include "config.h"
 #include "task.h"
-#include "math.h" // 资源占用大
+// #include "math.h" // 资源占用大
+#include "qmath.h" // 查表法
 
 // mpu base addr
 #define MPU_ADDR 0xD0
@@ -105,8 +106,8 @@ void app_mpu_proc(void)
      * 加速度计解算欧拉角:
      */
     float yaw_a = 0.0f;
-    float pitch_a = atan2(ay, az) * A_R2D;
-    float roll_a = atan2(ax, az) * A_R2D;
+    float pitch_a = qatan2(ay, az) * A_R2D;
+    float roll_a = qatan2(ax, az) * A_R2D;
 
     /**
      * 互补滤波
