@@ -16,9 +16,9 @@ void app_motor_init(void)
 {
     PID_InitTypeDef pidlr = {0};
     pidlr.DefaultOutput = 0;
-    pidlr.Kd = 0.0f;
     pidlr.Kp = 0.55f;
     pidlr.Ki = 7.0f;
+    pidlr.Kd = 0.0f;
     pidlr.OutputLowerLimit = -8.4f; // 电池电压反向输出最大值, 测试时安全起见, 设置为-4.0f
     pidlr.OutputUpperLimit = 8.4f;  // 电池电压正向输出最大值, 测试时安全起见, 设置为4.0f
     pidlr.Setpoint = 0;
@@ -33,9 +33,9 @@ void app_motor_proc(void)
 {
     PERIODIC(1);
 
+    // 获取当前左右电机转速, 获取当前运行时间(us)
     float w_L = app_encoder_getw_L();
     float w_R = app_encoder_getw_R();
-
     uint64_t now = GetUs();
 
     float Um_L = PID_Compute1(&motor_pid_L, w_L, now);

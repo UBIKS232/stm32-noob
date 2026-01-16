@@ -1,7 +1,7 @@
 #include "app_encoder.h"
 #include "delay.h"
 
-#define RATIO 0.01399402209f // (2 * PI / ((30613 / 1500) * 22))
+#define R2R 0.01399402209f // (2 * PI / ((30613 / 1500) * 22))
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
 // compound filter ratio
 #define COMPOUND_FILTER 0.3f
@@ -42,7 +42,7 @@ void app_encoder_proc(void) {}
  */
 float app_encoder_getpos_L(void)
 {
-    return (encoder_acc_L * RATIO);
+    return (encoder_acc_L * R2R);
 }
 
 /**
@@ -51,7 +51,7 @@ float app_encoder_getpos_L(void)
  */
 float app_encoder_getpos_R(void)
 {
-    return (encoder_acc_R * RATIO);
+    return (encoder_acc_R * R2R);
 }
 
 /**
@@ -71,7 +71,7 @@ float app_encoder_getw_L(void)
     uint64_t now = GetUs();
     uint64_t dt = MAX(cpy_encoder_t1_L - cpy_encoder_t0_L, now - cpy_encoder_t1_L);
 
-    encoder_raw_w_L = (RATIO * cpy_encoder_direction_L / (dt * 1.0e-6f));
+    encoder_raw_w_L = (R2R * cpy_encoder_direction_L / (dt * 1.0e-6f));
 
     encoder_filtered_w_L = COMPOUND_FILTER * encoder_raw_w_L + (1.0f - COMPOUND_FILTER) * encoder_filtered_w_L;
 
@@ -81,7 +81,7 @@ float app_encoder_getw_L(void)
     return encoder_filtered_w_L;
 
     // 下面这样写会导致严重的毛刺!! GetUs()被反复调用和打断, 而t0, t1又在不断更新, 时间值会更容易出现异常.
-    // return ((encoder_direction_L / (MAX(encoder_t1_L - encoder_t0_L, GetUs() - encoder_t1_L) * 1.0e-6)) * RATIO);
+    // return ((encoder_direction_L / (MAX(encoder_t1_L - encoder_t0_L, GetUs() - encoder_t1_L) * 1.0e-6)) * R2R);
 }
 
 /**
@@ -101,14 +101,14 @@ float app_encoder_getw_R(void)
     uint64_t now = GetUs();
     uint64_t dt = MAX(cpy_encoder_t1_R - cpy_encoder_t0_R, now - cpy_encoder_t1_R);
 
-    encoder_raw_w_R = (RATIO * cpy_encoder_direction_R / (dt * 1.0e-6f));
+    encoder_raw_w_R = (R2R * cpy_encoder_direction_R / (dt * 1.0e-6f));
 
     encoder_filtered_w_R = COMPOUND_FILTER * encoder_raw_w_R + (1.0f - COMPOUND_FILTER) * encoder_filtered_w_R;
 
     return encoder_filtered_w_R;
     // return encoder_raw_w_R;
 
-    // return (RATIO * cpy_encoder_direction_R / (dt * 1.0e-6f));
+    // return (R2R * cpy_encoder_direction_R / (dt * 1.0e-6f));
 }
 
 /**

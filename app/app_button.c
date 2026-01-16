@@ -7,6 +7,7 @@ static Button_TypeDef button_state;
 extern uint8_t pwm_state;
 extern PID_TypeDef motor_pid_L;
 extern PID_TypeDef motor_pid_R;
+extern volatile float omega_ref;
 
 static void button_pressed_handler(uint8_t clicks);
 
@@ -53,6 +54,7 @@ static void button_pressed_handler(uint8_t clicks)
             // app_motor_setw_L(0);
             PID_Reset(&motor_pid_L);
             PID_Reset(&motor_pid_R);
+            omega_ref = 0.0f;
         }
         app_pwm_cmd(pwm_state);
     }
