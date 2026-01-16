@@ -132,11 +132,11 @@ int main(void)
 #ifdef APP_MPU_ENABLE
         app_mpu_proc();
 #endif
-#ifdef APP_CONTROL_ENABLE
-        app_control_proc();
-#endif
 #ifdef APP_MOTOR_ENABLE
         app_motor_proc();
+#endif
+#ifdef APP_CONTROL_ENABLE
+        app_control_proc();
 #endif
 #endif
     }

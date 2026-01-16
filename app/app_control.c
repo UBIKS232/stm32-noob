@@ -1,12 +1,13 @@
 #include "app_control.h"
 #include "app_motor.h"
+#include "app_encoder.h"
 #include "pid.h"
 #include "task.h"
 #include "delay.h"
 #include "qmath.h"
 
 #define D2R 0.0174533f // PI / 180
-#define STD_G 9.8      // 重力加速度
+#define STD_G 9.8f      // 重力加速度
 #define STD_L 0.062f   // 平衡车轮胎中心到电池中心的距离
 #define STD_R 0.032f   // 平衡车轮胎半径
 
@@ -36,10 +37,10 @@ void app_control_init(void)
     pidttd.Kp = 10.0f;
     pidttd.Ki = 1.0f;
     pidttd.Kd = 0.0f;
-    pidttd.OutputLowerLimit = 0;
-    pidttd.OutputUpperLimit = 0;
-    // pidttd.OutputLowerLimit = -0.3 * STD_G;
-    // pidttd.OutputUpperLimit = 0.3 * STD_G;
+    // pidttd.OutputLowerLimit = 0;
+    // pidttd.OutputUpperLimit = 0;
+    pidttd.OutputLowerLimit = -0.3 * STD_G;
+    pidttd.OutputUpperLimit = 0.3 * STD_G;
     PID_Init(&contorl_velocity, &pidttd);
 
     // theta
@@ -69,22 +70,27 @@ void app_control_proc(void)
     // 最外环: 令速度环PID的SP=0
     PID_ChangeSetpoint(&contorl_velocity, 0.0f);
 
-    // 获取MPU数据, 获取当前运行时间(us)
+    // 获得实际平动速度: 获取编码器测得的w, 消除w中的w2, 得到实际平动速度
+    // float encoder_filtered_w = (encoder_filtered_w_L + encoder_filtered_w_R) / 2; // 取两轮速度平均值
+    float encoder_filtered_w = (app_encoder_getw_L() + app_encoder_getw_R()) / 2; // 取两轮速度平均值
+    
+    // 获取MPU数据
     float theta = pitch * D2R;
     float theta_dot = gx * D2R;
-    uint64_t now = GetUs();
-    float dt = (now - control_t0) * 1.0e-6;
 
-    // 获得实际平动速度: 获取编码器测得的w, 消除w中的w2, 得到实际平动速度
-    float encoder_filtered_w = (encoder_filtered_w_L + encoder_filtered_w_R) / 2; // 取两轮速度平均值
-    float encoder_filtered_w_2 = theta_dot * (STD_L + STD_R) / STD_R;
+    float encoder_filtered_w_2 = -theta_dot * (STD_L + STD_R) / STD_R;            // -theta_dot!
     float encoder_filtered_w_1 = encoder_filtered_w - encoder_filtered_w_2;
     float x_dot = encoder_filtered_w_1 * STD_R;
+
+    
+    // 获取当前运行时间(us)
+    uint64_t now = GetUs();
+    float dt = (now - control_t0) * 1.0e-6f;
 
     // 执行速度环PID计算
     float theta_ref = qatan(PID_Compute1(&contorl_velocity, x_dot, now) / STD_G);
 
-    // 设定外环thetaPID的SP=0
+    // 设定外环thetaPID的SP=theta_ref
     PID_ChangeSetpoint(&contorl_theta, theta_ref);
 
     // 计算外环thetaPID的输出theta_dot_ref
@@ -96,12 +102,12 @@ void app_control_proc(void)
     // 计算内环theta_dotPID的输出theta_dotdot_ref
     float theta_dotdot_ref = PID_Compute1(&contorl_theta_dot, theta_dot, now);
 
-    // 倒立摆逆运动解算, 与倒立摆这个非线性系统的作用相抵消
+    // 倒立摆逆解算, 与倒立摆这个非线性系统的作用相抵消
     float x_dotdot_ref = (STD_G * qsin(theta) - theta_dotdot_ref * STD_L) / qcos(theta);
 
     // 计算轮胎转速, rad/s
-    if(control_t0 != 0)
-    omega_ref += (x_dotdot_ref * 1.0f) / STD_R * dt;
+    if (control_t0 != 0)
+        omega_ref += (x_dotdot_ref * 1.0f) / STD_R * dt;
 
     // 设置轮胎转速
     app_motor_setw_L(omega_ref);

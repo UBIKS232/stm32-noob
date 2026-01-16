@@ -40,6 +40,8 @@ static void button_pressed_handler(uint8_t clicks)
 {
     if (clicks == 1)
     {
+        app_conrtol_reset();
+        app_motor_reset();
         if (pwm_state == 1)
         {
             pwm_state = 0;
@@ -47,12 +49,6 @@ static void button_pressed_handler(uint8_t clicks)
         else
         {
             pwm_state = 1;
-        }
-        if (pwm_state == 0)
-        {
-
-            app_conrtol_reset();
-            app_motor_reset();
         }
         app_pwm_cmd(pwm_state);
     }
