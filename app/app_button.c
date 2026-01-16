@@ -1,13 +1,13 @@
 #include "app_button.h"
 #include "app_pwm.h"
 #include "app_motor.h"
+#include "app_control.h"
 #include "pid.h"
 
 static Button_TypeDef button_state;
 extern uint8_t pwm_state;
 extern PID_TypeDef motor_pid_L;
 extern PID_TypeDef motor_pid_R;
-extern volatile float omega_ref;
 
 static void button_pressed_handler(uint8_t clicks);
 
@@ -48,13 +48,11 @@ static void button_pressed_handler(uint8_t clicks)
         {
             pwm_state = 1;
         }
-        if(pwm_state == 0) {
-            // reset or set zero? 应该是reset, 清除历史记录, 退出当前轮次的pid计算
-            // app_motor_setw_L(0);
-            // app_motor_setw_L(0);
-            PID_Reset(&motor_pid_L);
-            PID_Reset(&motor_pid_R);
-            omega_ref = 0.0f;
+        if (pwm_state == 0)
+        {
+
+            app_conrtol_reset();
+            app_motor_reset();
         }
         app_pwm_cmd(pwm_state);
     }

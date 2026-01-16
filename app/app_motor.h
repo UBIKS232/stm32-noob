@@ -7,5 +7,6 @@ void app_motor_init(void);
 void app_motor_proc(void);
 void app_motor_setw_L(float w);
 void app_motor_setw_R(float w);
+void app_motor_reset(void);
 
 #endif // __APP_MOTOR_H__

@@ -27,7 +27,7 @@ void app_motor_init(void)
 }
 
 /**
- * @brief 初始化电机的pid计算切片
+ * @brief 电机的pid计算切片
  */
 void app_motor_proc(void)
 {
@@ -47,6 +47,7 @@ void app_motor_proc(void)
     app_pwm_set_L(duty_L);
     app_pwm_set_R(duty_R);
 }
+
 /**
  * @brief 设置左电机转速w
  * @param float w: 左电机转速(rad/s)
@@ -63,4 +64,13 @@ void app_motor_setw_L(float w)
 void app_motor_setw_R(float w)
 {
     PID_ChangeSetpoint(&motor_pid_R, w);
+}
+
+/**
+ * @brief 复位motorPID
+ */
+void app_motor_reset(void)
+{
+    PID_Reset(&motor_pid_L);
+    PID_Reset(&motor_pid_R);
 }

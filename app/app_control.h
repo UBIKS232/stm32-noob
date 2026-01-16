@@ -5,5 +5,6 @@
 
 void app_control_init(void);
 void app_control_proc(void);
+void app_conrtol_reset(void);
 
 #endif // __APP_CONTROL_H__

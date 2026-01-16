@@ -39,8 +39,8 @@ volatile int8_t encoder_direction_L = 0;    // encoder L: T method direction
 volatile int8_t encoder_direction_R = 0;    // encoder R: T method direction
 volatile float encoder_raw_w_L = 0.0f;      // 不运行getw, 这个值就不更新
 volatile float encoder_raw_w_R = 0.0f;      // 不运行getw, 这个值就不更新
-volatile float encoder_filtered_w_L = 0.0f; // 与getw函数用途重合, 但是不运行getw, 这个值就不更新
-volatile float encoder_filtered_w_R = 0.0f; // 与getw函数用途重合, 但是不运行getw, 这个值就不更新
+volatile float encoder_filtered_w_L = 0.0f; // rad/s, 与getw函数用途重合, 但是不运行getw, 这个值就不更新
+volatile float encoder_filtered_w_R = 0.0f; // rad/s, 与getw函数用途重合, 但是不运行getw, 这个值就不更新
 // app mpu
 volatile float ax = 0.0f; // g(9.8m/s^2)
 volatile float ay = 0.0f; // g(9.8m/s^2)
@@ -56,12 +56,14 @@ volatile float roll = 0.0f;  // 单位: degree
 PID_TypeDef motor_pid_L = {0};
 PID_TypeDef motor_pid_R = {0};
 // app control
+volatile uint64_t control_t0 = 0;
+PID_TypeDef contorl_velocity = {0};  // 速度环
 PID_TypeDef contorl_theta = {0};     // theta环
 PID_TypeDef contorl_theta_dot = {0}; // theta_dot(w)环
 volatile float omega_ref = 0.0f;
 
 // test pid tareget
-static float target_w = 0.0f;
+// static float target_w = 0.0f;
 
 int main(void)
 {
