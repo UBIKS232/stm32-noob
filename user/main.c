@@ -9,6 +9,7 @@
 #include "app_mpu.h"
 #include "app_motor.h"
 #include "app_control.h"
+#include "app_rc.h"
 // mylibs
 #include "usart.h"
 #include "delay.h"
@@ -60,6 +61,7 @@ volatile uint64_t control_t0 = 0;
 PID_TypeDef contorl_velocity = {0};  // 速度环
 PID_TypeDef contorl_theta = {0};     // theta环
 PID_TypeDef contorl_theta_dot = {0}; // theta_dot(w)环
+PID_TypeDef contorl_turn = {0};      // 转向环
 volatile float omega_ref = 0.0f;
 
 // test pid tareget
@@ -94,6 +96,9 @@ int main(void)
 #endif
 #ifdef APP_CONTROL_ENABLE
     app_control_init();
+#endif
+#ifdef APP_RC_ENABLE
+    app_rc_init();
 #endif
 #endif
 
@@ -134,6 +139,9 @@ int main(void)
 #endif
 #ifdef APP_MOTOR_ENABLE
         app_motor_proc();
+#endif
+#ifdef APP_RC_ENABLE
+        app_rc_proc();
 #endif
 #ifdef APP_CONTROL_ENABLE
         app_control_proc();

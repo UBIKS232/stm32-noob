@@ -50,7 +50,7 @@
             <InvalidFlash>1</InvalidFlash>
           </TargetStatus>
           <OutputDirectory>.\Objects\</OutputDirectory>
-          <OutputName>template</OutputName>
+          <OutputName>balance_car</OutputName>
           <CreateExecutable>1</CreateExecutable>
           <CreateLib>0</CreateLib>
           <CreateHexFile>1</CreateHexFile>
@@ -495,6 +495,16 @@
               <FileType>5</FileType>
               <FilePath>.\app\app_control.h</FilePath>
             </File>
+            <File>
+              <FileName>app_rc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\app\app_rc.c</FilePath>
+            </File>
+            <File>
+              <FileName>app_rc.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\app\app_rc.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -918,7 +928,7 @@
   <LayerInfo>
     <Layers>
       <Layer>
-        <LayName>template</LayName>
+        <LayName>balance_car</LayName>
         <LayPrjMark>1</LayPrjMark>
       </Layer>
     </Layers>

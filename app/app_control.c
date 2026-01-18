@@ -7,14 +7,16 @@
 #include "qmath.h"
 
 #define D2R 0.0174533f // PI / 180
-#define STD_G 9.8f      // 重力加速度
+#define STD_G 9.8f     // 重力加速度
 #define STD_L 0.062f   // 平衡车轮胎中心到电池中心的距离
 #define STD_R 0.032f   // 平衡车轮胎半径
 
 extern PID_TypeDef contorl_velocity;
 extern PID_TypeDef contorl_theta;
 extern PID_TypeDef contorl_theta_dot;
+extern PID_TypeDef contorl_turn;
 extern volatile float gx;
+extern volatile float gz;
 extern volatile float yaw;
 extern volatile float pitch;
 extern volatile float roll;
@@ -58,6 +60,14 @@ void app_control_init(void)
     pidttd.OutputLowerLimit = -125.7f; // -40 * pi rad/s^2
     pidttd.OutputUpperLimit = 125.7f;  // 40 * pi rad/s^2
     PID_Init(&contorl_theta_dot, &pidttd);
+
+    // 转向环
+    pidttd.Kp = 1.0f;
+    pidttd.Ki = 0.0f;
+    pidttd.Kd = 0.0f;
+    pidttd.OutputLowerLimit = -15.0f; // -2 * 282(电机最大转速) / 60 * 2 * pi
+    pidttd.OutputUpperLimit = 15.0f;  // 2 * 282(电机最大转速) / 60 * 2 * pi
+    PID_Init(&contorl_turn, &pidttd);
 }
 
 /**
@@ -68,21 +78,21 @@ void app_control_proc(void)
     PERIODIC(5); // MPU6050的读取速度为200Hz
 
     // 最外环: 令速度环PID的SP=0
-    PID_ChangeSetpoint(&contorl_velocity, 0.0f);
+    // PID_ChangeSetpoint(&contorl_velocity, 0.0f); // 由上位机控制
 
     // 获得实际平动速度: 获取编码器测得的w, 消除w中的w2, 得到实际平动速度
     // float encoder_filtered_w = (encoder_filtered_w_L + encoder_filtered_w_R) / 2; // 取两轮速度平均值
     float encoder_filtered_w = (app_encoder_getw_L() + app_encoder_getw_R()) / 2; // 取两轮速度平均值
-    
+
     // 获取MPU数据
     float theta = pitch * D2R;
     float theta_dot = gx * D2R;
+    float turn = gz * D2R;
 
-    float encoder_filtered_w_2 = -theta_dot * (STD_L + STD_R) / STD_R;            // -theta_dot!
+    float encoder_filtered_w_2 = -theta_dot * (STD_L + STD_R) / STD_R; // -theta_dot!
     float encoder_filtered_w_1 = encoder_filtered_w - encoder_filtered_w_2;
     float x_dot = encoder_filtered_w_1 * STD_R;
 
-    
     // 获取当前运行时间(us)
     uint64_t now = GetUs();
     float dt = (now - control_t0) * 1.0e-6f;
@@ -109,12 +119,33 @@ void app_control_proc(void)
     if (control_t0 != 0)
         omega_ref += (x_dotdot_ref * 1.0f) / STD_R * dt;
 
+    // 控制转向
+    float omega_diff = PID_Compute1(&contorl_turn, turn, now);
+
     // 设置轮胎转速
-    app_motor_setw_L(omega_ref);
-    app_motor_setw_R(omega_ref);
+    app_motor_setw_L(omega_ref + omega_diff);
+    app_motor_setw_R(omega_ref - omega_diff);
 
     // 更新controlapp的上一次时间
     control_t0 = now;
+}
+
+/**
+ * @brief 控制平衡车直行速度
+ * @param float speed: m/s, 最大行进速度0.7m/s
+ */
+void app_conrtol_set_move_speed(float speed)
+{
+    PID_ChangeSetpoint(&contorl_velocity, speed);
+}
+
+/**
+ * @brief 控制平衡车转向速度
+ * @param float turn: rad/s, 最大转向速度15rad/s
+ */
+void app_conrtol_set_turn_speed(float turn)
+{
+    PID_ChangeSetpoint(&contorl_turn, turn);
 }
 
 /**

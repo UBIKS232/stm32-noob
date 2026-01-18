@@ -11,3 +11,4 @@
 #define APP_MPU_ENABLE
 #define APP_MOTOR_ENABLE
 #define APP_CONTROL_ENABLE
+#define APP_RC_ENABLE
