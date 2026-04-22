@@ -10,8 +10,8 @@
       <TargetName>default</TargetName>
       <ToolsetNumber>0x4</ToolsetNumber>
       <ToolsetName>ARM-ADS</ToolsetName>
-      <pArmCC>5060528::V5.06 update 5 (build 528)::.\ARMCC</pArmCC>
-      <pCCUsed>5060528::V5.06 update 5 (build 528)::.\ARMCC</pCCUsed>
+      <pArmCC>5060960::V5.06 update 7 (build 960)::.\ARMCC</pArmCC>
+      <pCCUsed>5060960::V5.06 update 7 (build 960)::.\ARMCC</pCCUsed>
       <uAC6>0</uAC6>
       <TargetOption>
         <TargetCommonOption>
@@ -339,9 +339,9 @@
             <v6Rtti>0</v6Rtti>
             <VariousControls>
               <MiscControls>--no-multibyte-chars</MiscControls>
-              <Define>STM32F10X_MD,USE_STDPERIPH_DRIVER,__CC_ARM</Define>
+              <Define></Define>
               <Undefine></Undefine>
-              <IncludePath>.\std_periph_driver\inc;.\user;.\my_lib;.\app\;.\app_test\</IncludePath>
+              <IncludePath>.\std_periph_driver\inc;.\user;.\my_lib;.\my_lib\font;.\my_lib\font\.h;.\app\;.\app_test\</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
