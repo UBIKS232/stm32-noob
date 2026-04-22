@@ -1,6 +1,8 @@
-# .vscode/
+.vscode/
 DebugConfig/
 Listings/
 Objects/
 tmp/
 *.uvguix.*
+*.txt
+.cache/
